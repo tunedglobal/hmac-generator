@@ -76,3 +76,7 @@ body {
   padding: 9px;
   font-size: 15px;
 }
+
+.text-weight-300 {
+  font-weight: 300;
+}

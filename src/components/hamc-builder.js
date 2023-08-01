@@ -87,7 +87,7 @@ function HMACBuilder() {
 
     const encode = (url) => {
         const uriEncoded = encodeURIComponent(url);
-        return uriEncoded.replace(/%\w\w/g, match => match.toLowerCase());
+        return uriEncoded.replace(/%\w\w/g, (match) => match.toLowerCase());
     };
 
     const generateHMAC = () => {
@@ -203,23 +203,21 @@ function HMACBuilder() {
                 </Col>
                 <Col lg={6} className="pt-2">
                     <Card className="text-start">
-                        <Card.Header>Result</Card.Header>
+                        <Card.Header>Output</Card.Header>
                         <Card.Body>
+                            <Card.Text className="text-start text-weight-300">Intermediate results</Card.Text>
                             <Accordion alwaysOpen className="pb-4">
                                 <Accordion.Item eventKey="0">
                                     <Accordion.Header>Request Signature - raw</Accordion.Header>
-                                    <Accordion.Body>
-                                        {signatureRaw.length > 0 ? signatureRaw : "None"}
-                                    </Accordion.Body>
+                                    <Accordion.Body>{signatureRaw.length > 0 ? signatureRaw : "None"}</Accordion.Body>
                                 </Accordion.Item>
                                 <Accordion.Item eventKey="1">
                                     <Accordion.Header>Request Signature - hash</Accordion.Header>
-                                    <Accordion.Body>
-                                        {signatureHash.length > 0 ? signatureHash : "None"}    
-                                    </Accordion.Body>
+                                    <Accordion.Body>{signatureHash.length > 0 ? signatureHash : "None"}</Accordion.Body>
                                 </Accordion.Item>
                             </Accordion>
-                            <Card.Text className="text-end">
+                            <Card.Text className="text-start mb-0 text-weight-300">Results</Card.Text>
+                            <Card.Text className="text-end mb-2">
                                 <CopyToClipboard text={`Tuned-HMAC ${hmac}`}>
                                     <span ref={target} onClick={handleCopyClick}>
                                         <FaRegCopy size={16} className="copy-icon" title="Copy to clipboard" />
