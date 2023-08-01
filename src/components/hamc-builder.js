@@ -85,6 +85,11 @@ function HMACBuilder() {
         setTimestamp(getCurrentTimestamp());
     };
 
+    const encode = (url) => {
+        const uriEncoded = encodeURIComponent(url);
+        return uriEncoded.replace(/%\w\w/g, match => match.toLowerCase());
+    };
+
     const generateHMAC = () => {
         let authCode = "";
 
@@ -94,7 +99,7 @@ function HMACBuilder() {
         }
 
         const httpMethod = "GET";
-        const uri = encodeURIComponent(url).toLowerCase();
+        const uri = encode(url);
 
         const signatureRawData = `${accessKey}${httpMethod}${uri}${nonce}${timestamp}`;
         const signatureBytes = enc.Utf8.parse(signatureRawData);
