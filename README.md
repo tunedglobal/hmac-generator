@@ -18,4 +18,6 @@ To start the development server, run:
 
 ```npm start```
 
-then open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+Then open [http://localhost:3000](http://localhost:3000) to view it in the browser. 
+
+Click [here](https://tunedglobal.github.io/hmac-generator) to view the live version of the application.
