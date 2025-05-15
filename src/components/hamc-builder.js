@@ -38,6 +38,7 @@ function HMACBuilder() {
     const [timestamp, setTimestamp] = useState(getCurrentTimestamp());
     const [signatureRaw, setSignatureRaw] = useState("");
     const [signatureHash, setSignatureHash] = useState("");
+    const [httpMethod, setHttpMethod] = useState("");
 
     const [show, setShow] = useState(false);
     const target = useRef(null);
@@ -62,6 +63,10 @@ function HMACBuilder() {
         setTimestamp(event.target.value);
     };
 
+    const handleHttpMethodChange = (event) => {
+        setHttpMethod(event.target.value);
+    };
+
     const handleCopyClick = () => {
         setShow(true);
         setTimeout(() => {
@@ -77,6 +82,7 @@ function HMACBuilder() {
     const resetForm = () => {
         setAccessKey("");
         setSecretKey("");
+        setHttpMethod("GET");
         setUrl("");
         setHMAC("");
         setNonce(uuidv4());
@@ -98,7 +104,6 @@ function HMACBuilder() {
             return;
         }
 
-        const httpMethod = "GET";
         const uri = encode(url);
 
         const signatureRawData = `${accessKey}${httpMethod}${uri}${nonce}${timestamp}`;
@@ -116,7 +121,7 @@ function HMACBuilder() {
 
     useEffect(() => {
         generateHMAC();
-    }, [accessKey, secretKey, url, nonce, timestamp]);
+    }, [accessKey, secretKey, url, nonce, timestamp, httpMethod]);
 
     return (
         <Container>
@@ -144,9 +149,12 @@ function HMACBuilder() {
                                     <Form.Label column sm="3">
                                         Http Method
                                     </Form.Label>
-                                    <Col sm="3">
-                                        <Form.Control disabled defaultValue="GET" />
-                                    </Col>
+                                    <Form.Label column sm="3">
+                                        <Form.Select defaultValue="GET" onChange={handleHttpMethodChange}>
+                                            <option value="GET">GET</option>
+                                            <option value="POST">POST</option>
+                                        </Form.Select>
+                                    </Form.Label>
                                     <Form.Label column sm="3">
                                         Algorithm
                                     </Form.Label>
