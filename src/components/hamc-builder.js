@@ -38,7 +38,7 @@ function HMACBuilder() {
     const [timestamp, setTimestamp] = useState(getCurrentTimestamp());
     const [signatureRaw, setSignatureRaw] = useState("");
     const [signatureHash, setSignatureHash] = useState("");
-    const [httpMethod, setHttpMethod] = useState("");
+    const [httpMethod, setHttpMethod] = useState("GET");
 
     const [show, setShow] = useState(false);
     const target = useRef(null);
