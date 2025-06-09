@@ -16,6 +16,7 @@ import { enc, HmacSHA256 } from "crypto-js";
 import { v4 as uuidv4 } from "uuid";
 import { DebounceInput } from "react-debounce-input";
 import { CopyToClipboard } from "react-copy-to-clipboard";
+import CryptoJS from 'crypto-js';
 
 import { FaRegCopy } from "react-icons/fa";
 import { FiRefreshCcw } from "react-icons/fi";
@@ -33,6 +34,8 @@ function HMACBuilder() {
     const [accessKey, setAccessKey] = useState("");
     const [secretKey, setSecretKey] = useState("");
     const [url, setUrl] = useState("");
+    const [payload, setPayload] = useState("");
+    const [isJsonPayloadValid, setIsJsonPayloadValid] = useState(true);
     const [hmac, setHMAC] = useState("");
     const [nonce, setNonce] = useState(uuidv4());
     const [timestamp, setTimestamp] = useState(getCurrentTimestamp());
@@ -53,6 +56,18 @@ function HMACBuilder() {
 
     const handleUrlChange = (event) => {
         setUrl(event.target.value);
+    };
+
+    const handlePayloadChange = (event) => {
+        const value = event.target.value;
+        setPayload(value);
+
+        try {
+            JSON.parse(value);
+            setIsJsonPayloadValid(true);
+        } catch (e) {
+            setIsJsonPayloadValid(false);
+        }
     };
 
     const handleNonceChange = (event) => {
@@ -84,6 +99,7 @@ function HMACBuilder() {
         setSecretKey("");
         setHttpMethod("GET");
         setUrl("");
+        setPayload("");
         setHMAC("");
         setNonce(uuidv4());
         setSignatureRaw("");
@@ -98,6 +114,7 @@ function HMACBuilder() {
 
     const generateHMAC = () => {
         let authCode = "";
+        let signatureRawData = "";
 
         if (accessKey.length === 0 || secretKey.length === 0 || url.length === 0 || nonce.length === 0 || timestamp.length === 0) {
             setHMAC(authCode);
@@ -106,7 +123,19 @@ function HMACBuilder() {
 
         const uri = encode(url);
 
-        const signatureRawData = `${accessKey}${httpMethod}${uri}${nonce}${timestamp}`;
+        if (httpMethod == "POST") {
+            const payloadMd5Hash = CryptoJS.MD5(CryptoJS.enc.Utf8.parse(payload));
+            const payloadBase64Hash = CryptoJS.enc.Base64.stringify(payloadMd5Hash);
+            signatureRawData = `${accessKey}${httpMethod}${uri}${nonce}${timestamp}${payloadBase64Hash}`;
+
+            console.log('payload', payload)
+            console.log('payloadMd5Hash', payloadMd5Hash)
+            console.log('payloadBase64Hash', payloadBase64Hash)
+        }
+        else {
+            signatureRawData = `${accessKey}${httpMethod}${uri}${nonce}${timestamp}`;
+        }
+
         const signatureBytes = enc.Utf8.parse(signatureRawData);
         const secretKeyBytes = enc.Base64.parse(secretKey);
         const signature = HmacSHA256(signatureBytes, secretKeyBytes);
@@ -121,7 +150,7 @@ function HMACBuilder() {
 
     useEffect(() => {
         generateHMAC();
-    }, [accessKey, secretKey, url, nonce, timestamp, httpMethod]);
+    }, [accessKey, secretKey, url, nonce, timestamp, httpMethod, payload]);
 
     return (
         <Container>
@@ -163,6 +192,11 @@ function HMACBuilder() {
                                     </Col>
                                 </Form.Group>
                                 <hr />
+                                <Form.Group className="mb-3" hidden={httpMethod !== "POST"}>
+                                    <Form.Label>Payload</Form.Label>
+                                    <DebounceInput element="textarea" value={payload} className="form-control" minLength={2} debounceTimeout={500} onChange={handlePayloadChange} />
+                                     {!isJsonPayloadValid && (<div className="text-danger mt-1">Payload must be valid JSON.</div>)}
+                                </Form.Group>
                                 <Form.Group className="mb-3">
                                     <Form.Label>Url</Form.Label>
                                     <DebounceInput element="textarea" value={url} className="form-control" minLength={2} debounceTimeout={500} onChange={handleUrlChange} />
