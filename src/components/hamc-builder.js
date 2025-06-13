@@ -124,13 +124,9 @@ function HMACBuilder() {
         const uri = encode(url);
 
         if (httpMethod == "POST") {
-            const payloadMd5Hash = CryptoJS.MD5(CryptoJS.enc.Utf8.parse(payload));
-            const payloadBase64Hash = CryptoJS.enc.Base64.stringify(payloadMd5Hash);
-            signatureRawData = `${accessKey}${httpMethod}${uri}${nonce}${timestamp}${payloadBase64Hash}`;
-
-            console.log('payload', payload)
-            console.log('payloadMd5Hash', payloadMd5Hash)
-            console.log('payloadBase64Hash', payloadBase64Hash)
+            const md5Hash = CryptoJS.MD5(CryptoJS.enc.Utf8.parse(payload));
+            const base64Hash = CryptoJS.enc.Base64.stringify(md5Hash);
+            signatureRawData = `${accessKey}${httpMethod}${uri}${base64Hash}${nonce}${timestamp}`;
         }
         else {
             signatureRawData = `${accessKey}${httpMethod}${uri}${nonce}${timestamp}`;
