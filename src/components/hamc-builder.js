@@ -68,8 +68,10 @@ function HMACBuilder() {
         }
 
         try {
-            JSON.parse(value);
-            setIsJsonPayloadValid(true);
+            const parsed = JSON.parse(value);
+            const isValidObjectOrArray = typeof parsed === 'object' && parsed !== null;
+
+            setIsJsonPayloadValid(isValidObjectOrArray);
         } catch (e) {
             setIsJsonPayloadValid(false);
         }
