@@ -16,8 +16,9 @@ import { enc, HmacSHA256 } from "crypto-js";
 import { v4 as uuidv4 } from "uuid";
 import { DebounceInput } from "react-debounce-input";
 import { CopyToClipboard } from "react-copy-to-clipboard";
+import CryptoJS from 'crypto-js';
 
-import { FaRegCopy } from "react-icons/fa";
+import { FaRegCopy, FaCompressAlt } from "react-icons/fa";
 import { FiRefreshCcw } from "react-icons/fi";
 import { ImInfo } from "react-icons/im";
 
@@ -33,6 +34,8 @@ function HMACBuilder() {
     const [accessKey, setAccessKey] = useState("");
     const [secretKey, setSecretKey] = useState("");
     const [url, setUrl] = useState("");
+    const [payload, setPayload] = useState("");
+    const [isJsonPayloadValid, setIsJsonPayloadValid] = useState(true);
     const [hmac, setHMAC] = useState("");
     const [nonce, setNonce] = useState(uuidv4());
     const [timestamp, setTimestamp] = useState(getCurrentTimestamp());
@@ -53,6 +56,18 @@ function HMACBuilder() {
 
     const handleUrlChange = (event) => {
         setUrl(event.target.value);
+    };
+
+    const handlePayloadChange = (event) => {
+        const value = event.target.value;
+        setPayload(value);
+
+        try {
+            JSON.parse(value);
+            setIsJsonPayloadValid(true);
+        } catch (e) {
+            setIsJsonPayloadValid(false);
+        }
     };
 
     const handleNonceChange = (event) => {
@@ -79,11 +94,22 @@ function HMACBuilder() {
         setTimestamp(getCurrentTimestamp());
     };
 
+    const minifyPostPayload = () => {
+
+        if(!isJsonPayloadValid || payload.length < 1){
+            return;
+        }
+            
+        const minified = JSON.stringify(JSON.parse(payload));
+        setPayload(minified);
+    };
+
     const resetForm = () => {
         setAccessKey("");
         setSecretKey("");
         setHttpMethod("GET");
         setUrl("");
+        setPayload("");
         setHMAC("");
         setNonce(uuidv4());
         setSignatureRaw("");
@@ -98,6 +124,7 @@ function HMACBuilder() {
 
     const generateHMAC = () => {
         let authCode = "";
+        let signatureRawData = "";
 
         if (accessKey.length === 0 || secretKey.length === 0 || url.length === 0 || nonce.length === 0 || timestamp.length === 0) {
             setHMAC(authCode);
@@ -106,7 +133,18 @@ function HMACBuilder() {
 
         const uri = encode(url);
 
-        const signatureRawData = `${accessKey}${httpMethod}${uri}${nonce}${timestamp}`;
+        if (httpMethod == "POST") {
+            // Normalize the value in the textbox since in C# it wuold add the \r\n but in textarea its only \n
+            const normalizedPayload = payload.replace(/\n/g, '\r\n');
+
+            const md5Hash = CryptoJS.MD5(CryptoJS.enc.Utf8.parse(normalizedPayload));
+            const base64Hash = CryptoJS.enc.Base64.stringify(md5Hash);
+            signatureRawData = `${accessKey}${httpMethod}${uri}${base64Hash}${nonce}${timestamp}`;
+        }
+        else {
+            signatureRawData = `${accessKey}${httpMethod}${uri}${nonce}${timestamp}`;
+        }
+
         const signatureBytes = enc.Utf8.parse(signatureRawData);
         const secretKeyBytes = enc.Base64.parse(secretKey);
         const signature = HmacSHA256(signatureBytes, secretKeyBytes);
@@ -121,7 +159,7 @@ function HMACBuilder() {
 
     useEffect(() => {
         generateHMAC();
-    }, [accessKey, secretKey, url, nonce, timestamp, httpMethod]);
+    }, [accessKey, secretKey, url, nonce, timestamp, httpMethod, payload]);
 
     return (
         <Container>
@@ -163,6 +201,18 @@ function HMACBuilder() {
                                     </Col>
                                 </Form.Group>
                                 <hr />
+                                 <Row hidden={httpMethod !== "POST"}>
+                                    <Col className="text-end" style={{ padding: "0px 10px 5px 0px" }}>
+                                        <Button variant="primary" size="sm" onClick={minifyPostPayload} title="Minify payload. Please make sure both payloads from the requester is the same.">
+                                            <FaCompressAlt size={16} />
+                                        </Button>
+                                    </Col>
+                                </Row>
+                                <Form.Group className="mb-3" hidden={httpMethod !== "POST"}>
+                                    <Form.Label>Payload</Form.Label>
+                                    <DebounceInput element="textarea" value={payload} className="form-control" minLength={2} debounceTimeout={500} onChange={handlePayloadChange} />
+                                     {!isJsonPayloadValid && (<div className="text-danger mt-1">Payload must be valid JSON.</div>)}
+                                </Form.Group>
                                 <Form.Group className="mb-3">
                                     <Form.Label>Url</Form.Label>
                                     <DebounceInput element="textarea" value={url} className="form-control" minLength={2} debounceTimeout={500} onChange={handleUrlChange} />
