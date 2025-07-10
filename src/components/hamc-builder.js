@@ -222,7 +222,7 @@ function HMACBuilder() {
                                 </Row>
                                 <Form.Group className="mb-3" hidden={httpMethod !== "POST"}>
                                     <Form.Label>Payload</Form.Label>
-                                    <DebounceInput element="textarea" value={payload} className="form-control" minLength={2} debounceTimeout={500} onChange={handlePayloadChange} />
+                                    <DebounceInput element="textarea" value={payload} className="form-control" minLength={2} debounceTimeout={500} onChange={() => {}} onBlur={handlePayloadChange} />
                                      {!isJsonPayloadValid && (<div className="text-danger mt-1">Payload must be valid JSON.</div>)}
                                 </Form.Group>
                                 <Form.Group className="mb-3">
