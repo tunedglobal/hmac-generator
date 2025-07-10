@@ -142,12 +142,11 @@ function HMACBuilder() {
 
             let base64Hash = "";
             
-            if(payload.length > 0){
+            if(payload.length > 0) {
                 // Normalize the value in the textbox since in C# it wuold add the \r\n but in textarea its only \n
                 const normalizedPayload = payload.replace(/\n/g, '\r\n');
                 const md5Hash = CryptoJS.MD5(CryptoJS.enc.Utf8.parse(normalizedPayload));
                 base64Hash = CryptoJS.enc.Base64.stringify(md5Hash);
-                
             }
 
             signatureRawData = `${accessKey}${httpMethod}${uri}${base64Hash}${nonce}${timestamp}`;
