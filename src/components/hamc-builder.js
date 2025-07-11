@@ -62,9 +62,16 @@ function HMACBuilder() {
         const value = event.target.value;
         setPayload(value);
 
-        try {
-            JSON.parse(value);
+        if(value.length == 0 ) {
             setIsJsonPayloadValid(true);
+            return;
+        }
+
+        try {
+            const parsed = JSON.parse(value);
+            const isValidObjectOrArray = typeof parsed === 'object' && parsed !== null;
+
+            setIsJsonPayloadValid(isValidObjectOrArray);
         } catch (e) {
             setIsJsonPayloadValid(false);
         }
@@ -134,11 +141,16 @@ function HMACBuilder() {
         const uri = encode(url);
 
         if (httpMethod == "POST") {
-            // Normalize the value in the textbox since in C# it wuold add the \r\n but in textarea its only \n
-            const normalizedPayload = payload.replace(/\n/g, '\r\n');
 
-            const md5Hash = CryptoJS.MD5(CryptoJS.enc.Utf8.parse(normalizedPayload));
-            const base64Hash = CryptoJS.enc.Base64.stringify(md5Hash);
+            let base64Hash = "";
+            
+            if(payload.length > 0) {
+                // Normalize the value in the textbox since in C# it wuold add the \r\n but in textarea its only \n
+                const normalizedPayload = payload.replace(/\n/g, '\r\n');
+                const md5Hash = CryptoJS.MD5(CryptoJS.enc.Utf8.parse(normalizedPayload));
+                base64Hash = CryptoJS.enc.Base64.stringify(md5Hash);
+            }
+
             signatureRawData = `${accessKey}${httpMethod}${uri}${base64Hash}${nonce}${timestamp}`;
         }
         else {
@@ -210,7 +222,7 @@ function HMACBuilder() {
                                 </Row>
                                 <Form.Group className="mb-3" hidden={httpMethod !== "POST"}>
                                     <Form.Label>Payload</Form.Label>
-                                    <DebounceInput element="textarea" value={payload} className="form-control" minLength={2} debounceTimeout={500} onChange={handlePayloadChange} />
+                                    <DebounceInput element="textarea" value={payload} className="form-control" minLength={2} debounceTimeout={500} onChange={() => {}} onBlur={handlePayloadChange} />
                                      {!isJsonPayloadValid && (<div className="text-danger mt-1">Payload must be valid JSON.</div>)}
                                 </Form.Group>
                                 <Form.Group className="mb-3">
