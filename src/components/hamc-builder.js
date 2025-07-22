@@ -140,21 +140,20 @@ function HMACBuilder() {
 
         const uri = encode(url);
 
-        if (httpMethod == "POST") {
-
+        if (httpMethod === "GET") {
+            signatureRawData = `${accessKey}${httpMethod}${uri}${nonce}${timestamp}`;
+        }
+        else {
             let base64Hash = "";
-            
-            if(payload.length > 0) {
-                // Normalize the value in the textbox since in C# it wuold add the \r\n but in textarea its only \n
+
+            if (payload.length > 0) {
+                // Normalize the value in the textbox since in C# it would add the \r\n but in textarea its only \n
                 const normalizedPayload = payload.replace(/\n/g, '\r\n');
                 const md5Hash = CryptoJS.MD5(CryptoJS.enc.Utf8.parse(normalizedPayload));
                 base64Hash = CryptoJS.enc.Base64.stringify(md5Hash);
             }
 
             signatureRawData = `${accessKey}${httpMethod}${uri}${base64Hash}${nonce}${timestamp}`;
-        }
-        else {
-            signatureRawData = `${accessKey}${httpMethod}${uri}${nonce}${timestamp}`;
         }
 
         const signatureBytes = enc.Utf8.parse(signatureRawData);
@@ -203,6 +202,7 @@ function HMACBuilder() {
                                         <Form.Select defaultValue="GET" onChange={handleHttpMethodChange}>
                                             <option value="GET">GET</option>
                                             <option value="POST">POST</option>
+                                            <option value="PUT">PUT</option>
                                         </Form.Select>
                                     </Form.Label>
                                     <Form.Label column sm="3">
@@ -213,14 +213,14 @@ function HMACBuilder() {
                                     </Col>
                                 </Form.Group>
                                 <hr />
-                                 <Row hidden={httpMethod !== "POST"}>
+                                 <Row hidden={httpMethod === "GET"}>
                                     <Col className="text-end" style={{ padding: "0px 10px 5px 0px" }}>
                                         <Button variant="primary" size="sm" onClick={minifyPostPayload} title="Minify payload. Please make sure both payloads from the requester is the same.">
                                             <FaCompressAlt size={16} />
                                         </Button>
                                     </Col>
                                 </Row>
-                                <Form.Group className="mb-3" hidden={httpMethod !== "POST"}>
+                                <Form.Group className="mb-3" hidden={httpMethod === "GET"}>
                                     <Form.Label>Payload</Form.Label>
                                     <DebounceInput element="textarea" value={payload} className="form-control" minLength={2} debounceTimeout={500} onChange={() => {}} onBlur={handlePayloadChange} />
                                      {!isJsonPayloadValid && (<div className="text-danger mt-1">Payload must be valid JSON.</div>)}
