@@ -203,6 +203,7 @@ function HMACBuilder() {
                                             <option value="GET">GET</option>
                                             <option value="POST">POST</option>
                                             <option value="PUT">PUT</option>
+                                            <option value="DELETE">DELETE</option>
                                         </Form.Select>
                                     </Form.Label>
                                     <Form.Label column sm="3">
