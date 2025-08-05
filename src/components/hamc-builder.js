@@ -133,7 +133,7 @@ function HMACBuilder() {
         let authCode = "";
         let signatureRawData = "";
 
-        if (accessKey.length === 0 || secretKey.length === 0 || url.length === 0 || nonce.length === 0 || timestamp.length === 0) {
+        if (accessKey.length === 0 || secretKey.length === 0 || url.length === 0) {
             setHMAC(authCode);
             return;
         }
@@ -141,7 +141,7 @@ function HMACBuilder() {
         const uri = encode(url);
 
         if (httpMethod === "GET") {
-            signatureRawData = `${accessKey}${httpMethod}${uri}${nonce}${timestamp}`;
+            signatureRawData = `${accessKey}${httpMethod}${uri}`;
         }
         else {
             let base64Hash = "";
@@ -153,7 +153,7 @@ function HMACBuilder() {
                 base64Hash = CryptoJS.enc.Base64.stringify(md5Hash);
             }
 
-            signatureRawData = `${accessKey}${httpMethod}${uri}${base64Hash}${nonce}${timestamp}`;
+            signatureRawData = `${accessKey}${httpMethod}${uri}${base64Hash}`;
         }
 
         const signatureBytes = enc.Utf8.parse(signatureRawData);
@@ -161,7 +161,7 @@ function HMACBuilder() {
         const signature = HmacSHA256(signatureBytes, secretKeyBytes);
         const requestSignatureBase64String = signature.toString(enc.Base64);
 
-        authCode = `${accessKey}:${requestSignatureBase64String}:${nonce}:${timestamp}`;
+        authCode = `${accessKey}:${requestSignatureBase64String}`;
 
         setSignatureRaw(signatureRawData);
         setSignatureHash(requestSignatureBase64String);
